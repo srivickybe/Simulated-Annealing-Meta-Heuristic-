@@ -1,0 +1,264 @@
+
+
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Scanner;
+
+public class Bin_Allocation {
+
+	public static void main(String[] args)
+	{
+		calculate();
+	}
+	public static void calculate(){
+
+		@SuppressWarnings("resource")
+		Scanner in=new Scanner(System.in);
+		
+		System.out.println("Enter No of Vehicle types");
+		int vehicle_types=in.nextInt();
+
+		int[] vehicle_capacity=new int[vehicle_types];
+		int[] vehicle_count=new int[vehicle_types];
+		int[] vehicle_max_trip=new int[vehicle_types];
+		
+		int availabletrip=0;	
+		for(int i=0;i<vehicle_types;i++){
+			System.out.println("Enter capacity of Vehicle Type: "+(i+1));
+			vehicle_capacity[i]=in.nextInt();
+			System.out.println("Enter Number of Vehicles for vehicle Type: "+(i+1));
+			vehicle_count[i]=in.nextInt();
+			System.out.println("Enter Maximum Trip of vehicle Type: "+(i+1));
+			vehicle_max_trip[i]=in.nextInt();
+		    availabletrip +=(vehicle_capacity[i]*vehicle_count[i]*vehicle_max_trip[i]);
+		}
+		
+		int no_bins=availabletrip;
+
+		int[][] graph=new int[no_bins][no_bins];
+		System.out.println("Distance Matrix for Waste bins Nodes ");
+		
+		
+		for(int i=0;i<no_bins;i++){
+			for(int j=0;j<no_bins;j++){
+				if(i!=j){
+				graph[i][j]=((i+1)*(j+1)+i+j)%10;
+				}else{
+					graph[i][j]=0;
+				}
+				System.out.print(graph[i][j]+"\t");
+			}
+			System.out.println();
+		}
+				
+		boolean[] isFinished=new boolean[no_bins];
+		int dist[]=new int[no_bins];
+		for(int i=0;i<no_bins;i++){
+			dist[i]=(i*(i+1))%11+1;
+		}
+			
+		System.out.println("Distance from Orgin");
+			for(int u=0;u<no_bins;u++){
+				isFinished[u]=false;
+				System.out.print("\t"+dist[u]);
+			}
+		
+			int[] randomArr = new int[no_bins];
+			Random random=new Random();
+			for(int i=0;i<no_bins;i++){
+			int ran=random.nextInt(no_bins);
+			
+			
+					
+			do{
+				if(!isFinished[ran]){
+					isFinished[ran]=true;
+					randomArr[i]=ran+1;
+					break;
+				}else{
+					ran++;
+					ran=(ran)%no_bins;
+				}
+				
+			}while(true);
+		}
+			
+			
+		//int[] total_weight=new int[2];	
+			int result_total_weight=-1;
+			int total_weight=0;
+			int[] resultArr=new int[no_bins];
+		
+			System.out.println("\nRandom Array");
+			for(int p:randomArr){
+				System.out.print("\t"+p);
+			}
+		
+			double T=450;
+			int accept=0;
+			double z=0.9;
+			ArrayList<Integer> list;
+			ArrayList<BinList> resultList=new ArrayList<BinList>();
+		int total=0;
+			while(T>=30){
+	accept=0;
+				while(no_bins>=accept){		
+		
+					
+		
+		System.out.println();
+		System.out.println("\nResults");
+		
+		int i=0;
+		
+		int rem_nodes=no_bins,weight=0;total_weight=0;
+		
+		for(int j=0;j<vehicle_types;j++){
+			for(int l=0;l<vehicle_count[j];l++){
+				for(int m=1;m<=vehicle_max_trip[j];m++){
+					list=new ArrayList<Integer>();
+					if(vehicle_capacity[j]==1){
+						System.out.print("Capacity: "+vehicle_capacity[j]+"\tVehicle No:  "+(l+1)+"\tTrip No: "+m);
+						weight=dist[i]*2;
+						//System.out.print("\tBins No:\t"+randomArr[i]);
+						list.add(randomArr[i]);
+						rem_nodes--;
+						i++;
+						
+					}else{
+						//System.out.print("Capacity: "+vehicle_capacity[j]+"\tVehicle No: "+(l+1)+"\tTrip No: "+m);
+						weight=dist[i];
+						//System.out.print("\tBins No:\t"+randomArr[i]);
+						list.add(randomArr[i]);
+						i++;
+						rem_nodes--;
+					for(int n=1;n<vehicle_capacity[j]-1;n++){
+						//System.out.print("\t"+randomArr[i]);
+						list.add(randomArr[i]);
+						weight += graph[randomArr[i-1]-1][randomArr[i]-1];
+						i++;
+						rem_nodes--;
+					}
+					//System.out.print("\t"+randomArr[i]);
+					list.add(randomArr[i]);
+					rem_nodes--;
+					weight +=dist[i];
+					i++;
+					
+				}
+					resultList.add(new BinList(vehicle_capacity[j],(l+1),m,weight,list));
+					total_weight +=weight;
+					//System.out.println("\tDistance\t"+weight);
+				}
+					
+			}
+		}
+		System.out.println("rem_nodes:"+rem_nodes+"\tTotal distance covered:"+total_weight);
+		System.out.println();
+		int Tg=total_weight;
+		System.out.println("Capcity\ttrip\tvehicle\tDistance\tbins");
+		for(BinList l:resultList){
+			System.out.print(l.getCapacity()+"\t"+l.getTrip()+"\t"+l.getCount()+"\t"+l.getWeight()+"\t");
+			for(int no:l.getList()){
+				System.out.print(no+"\t");
+			}
+			System.out.println();
+		}
+		if(accept==0){
+			accept++;
+			result_total_weight=total_weight;
+			for(int w=0;w<no_bins;w++){
+				resultArr[w]=randomArr[w];
+			}
+			
+			int ran1=random.nextInt(no_bins);
+			int ran2=random.nextInt(no_bins);
+			//System.out.println(ran1+" "+ran2);
+			if(ran1 == ran2){
+				ran2=(ran2++)%no_bins;
+			}
+			
+			
+			int temp=randomArr[ran1];
+			randomArr[ran1]=randomArr[ran2];
+			randomArr[ran2]=temp;
+			
+		}	
+		else{
+			int diff=total_weight-result_total_weight;
+			System.out.println("difference"+diff);
+			if(diff<=0){
+				total_weight=result_total_weight;
+				accept++;
+				
+				
+				int ran1=random.nextInt(no_bins);
+				int ran2=random.nextInt(no_bins);
+				//System.out.println(ran1+" "+ran2);
+				if(ran1 == ran2){
+					ran2=(ran2++)%no_bins;
+				}
+				
+				
+				int temp=randomArr[ran1];
+				randomArr[ran1]=randomArr[ran2];
+				randomArr[ran2]=temp;
+				
+				
+				for(int w=0;w<no_bins;w++){
+					resultArr[w]=randomArr[w];
+				}
+			if (Tg<=total_weight) {
+			Tg=total_weight;
+			System.out.println("global optimum value is "+Tg);
+			}
+			else {
+				total++;
+				
+			}
+			}else{
+				double prob=Math.exp(-1*diff/T);
+			
+				if(prob>=0.8){
+					accept++;
+					System.out.println("no change ");
+					
+					
+					int ran1=random.nextInt(no_bins);
+					int ran2=random.nextInt(no_bins);
+					//System.out.println(ran1+" "+ran2);
+					if(ran1 == ran2){
+						ran2=(ran2++)%no_bins;
+					}
+					
+					
+					int temp=randomArr[ran1];
+					randomArr[ran1]=randomArr[ran2];
+					randomArr[ran2]=temp;
+					
+				}else{
+					for(int w=0;w<no_bins;w++){
+						randomArr[w]=resultArr[w];
+					}
+					int ran1=random.nextInt(no_bins);
+					int ran2=random.nextInt(no_bins);
+					//System.out.println(ran1+" "+ran2);
+					if(ran1 == ran2){
+						ran2=(ran2++)%no_bins;
+					}
+					
+					
+					int temp=randomArr[ran1];
+					randomArr[ran1]=randomArr[ran2];
+					randomArr[ran2]=temp;
+					
+				}
+			}
+		}
+		System.out.println("Accept"+accept);
+	};
+	T=T*z;
+	System.out.println("temperature"+T);
+			}
+		}
+	}
